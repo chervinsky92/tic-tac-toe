@@ -4,6 +4,7 @@
 from flask import Flask, render_template, session, redirect, url_for
 from flask_session import Session
 from tempfile import mkdtemp
+#create a function to check winning possibilities
 
 app = Flask(__name__)
 
@@ -19,18 +20,24 @@ def index():
     if 'board' not in session:
         session['board'] = [[None, None, None], [None, None, None], [None, None, None]]
         session['turn'] = 'X'
+        #session['winner'] = None
 
-    return render_template('game.html', game=session['board'], turn=session['turn'])
+    return render_template('game.html', game=session['board'], turn=session['turn']) #winner=session['winner']
 
 @app.route('/play/<int:row>/<int:col>')
 def play(row, col):
+
+    # Play a move
     session['board'][row][col] = session['turn']
 
-    if session['turn'] == 'X':
-        session['turn'] == 'O'
-    else:
-        session['turn'] == 'X'
+    # Check if the move results in a win
+    #session['winner'] = function to check game board with winning combinations
 
+    # Determine turn for next move
+    if session['turn'] == 'X':
+        session['turn'] = 'O'
+    else:
+        session['turn'] = 'X'
 
     return redirect(url_for('index'))
 
