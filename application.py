@@ -4,7 +4,8 @@
 from flask import Flask, render_template, session, redirect, url_for
 from flask_session import Session
 from tempfile import mkdtemp
-#create a function to check winning possibilities
+
+from helpers import win, tie
 
 app = Flask(__name__)
 
@@ -16,28 +17,34 @@ Session(app)
 
 @app.route('/')
 def index():
-    
     if 'board' not in session:
         session['board'] = [[None, None, None], [None, None, None], [None, None, None]]
         session['turn'] = 'X'
-        #session['winner'] = None
+        session['winner'] = None
+        session['tie'] = False
 
-    return render_template('game.html', game=session['board'], turn=session['turn']) #winner=session['winner']
+    return render_template('game.html', game=session['board'], turn=session['turn'], winner=session['winner'], tie=session['tie'])
 
 @app.route('/play/<int:row>/<int:col>')
 def play(row, col):
-
     # Play a move
     session['board'][row][col] = session['turn']
 
-    # Check if the move results in a win
-    #session['winner'] = function to check game board with winning combinations
+    # Check for winner
+    if (win(session['board'])) == True:
+        session['winner'] = session['turn']
+        session['board'] = [[None, None, None], [None, None, None], [None, None, None]]
+
+    # Check for tie
+    if (tie(session['board'])):
+        session['tie'] = True
+        session['winner'] = None
 
     # Determine turn for next move
-    if session['turn'] == 'X':
-        session['turn'] = 'O'
-    else:
-        session['turn'] = 'X'
-
+    session['turn'] = 'O' if session['turn'] == 'X' else 'X'
     return redirect(url_for('index'))
 
+@app.route('/reset')
+def reset():
+    session.clear()
+    return redirect(url_for('index'))
